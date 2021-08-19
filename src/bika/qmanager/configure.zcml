@@ -13,13 +13,14 @@
   -->
   <!--<includeDependencies package="." />-->
 
+  <include package=".adapters"/>
   <include package=".browser" />
 
   <include file="permissions.zcml" />
 
   <genericsetup:registerProfile
       name="default"
-      title="bika.qmanager"
+      title="BIKAQManager"
       directory="profiles/default"
       description="Installs the bika.qmanager add-on."
       provides="Products.GenericSetup.interfaces.EXTENSION"
