@@ -1,0 +1,75 @@
+
+<configure xmlns="http://namespaces.zope.org/zope"
+           xmlns:zcml="http://namespaces.zope.org/browser"
+           xmlns:fss="http://namespaces.zope.org/browser"
+           xmlns:browser="http://namespaces.zope.org/browser"
+           xmlns:five="http://namespaces.zope.org/five">
+
+  <!-- Adapter for analyses action queue task -->
+  <adapter
+    name="task_action_publish"
+    factory="senaite.queue.adapters.QueuedActionTaskAdapter"
+    provides="senaite.queue.interfaces.IQueuedTaskAdapter"
+    for="bika.lims.interfaces.IWorksheet" />
+
+  <!-- Worksheet: "unassign"
+  Submits the analyses from a worksheet by using a queue -->
+  <adapter
+    name="workflow_action_unassign"
+    for="bika.lims.interfaces.IWorksheet
+         senaite.queue.interfaces.ISenaiteQueueLayer"
+    factory=".adapters.actions.WorkflowActionGenericQueueAdapter"
+    provides="bika.lims.interfaces.IWorkflowActionAdapter"
+    permission="zope.Public" />
+
+  <!-- Worksheet: "submit"
+  Submits the analyses from a worksheet by using a queue -->
+  <adapter
+    name="workflow_action_submit"
+    for="bika.lims.interfaces.IWorksheet
+         senaite.queue.interfaces.ISenaiteQueueLayer"
+    factory=".adapters.actions.WorkflowActionGenericQueueAdapter"
+    provides="bika.lims.interfaces.IWorkflowActionAdapter"
+    permission="zope.Public" />
+
+  <!-- Worksheet: "reject"
+  Reject the analyses from a worksheet by using a queue -->
+  <adapter
+    name="workflow_action_reject"
+    for="bika.lims.interfaces.IWorksheet
+         senaite.queue.interfaces.ISenaiteQueueLayer"
+    factory=".adapters.actions.WorkflowActionGenericQueueAdapter"
+    provides="bika.lims.interfaces.IWorkflowActionAdapter"
+    permission="zope.Public" />
+
+  <!-- Worksheet: "retract"
+  Reject the analyses from a worksheet by using a queue -->
+  <adapter
+    name="workflow_action_retract"
+    for="bika.lims.interfaces.IWorksheet
+         senaite.queue.interfaces.ISenaiteQueueLayer"
+    factory=".adapters.actions.WorkflowActionGenericQueueAdapter"
+    provides="bika.lims.interfaces.IWorkflowActionAdapter"
+    permission="zope.Public" />
+
+  <!-- Worksheet: "verify"
+  Verify the analyses from a worksheet by using a queue -->
+  <adapter
+    name="workflow_action_verify"
+    for="bika.lims.interfaces.IWorksheet
+         senaite.queue.interfaces.ISenaiteQueueLayer"
+    factory=".adapters.actions.WorkflowActionGenericQueueAdapter"
+    provides="bika.lims.interfaces.IWorkflowActionAdapter"
+    permission="zope.Public" />
+
+  <!-- Worksheet: "publish"
+  Verify the analyses from a worksheet by using a queue -->
+  <adapter
+    name="workflow_action_publish"
+    for="bika.lims.interfaces.IWorksheet
+         senaite.queue.interfaces.ISenaiteQueueLayer"
+    factory=".adapters.actions.WorkflowActionGenericQueueAdapter"
+    provides="bika.lims.interfaces.IWorkflowActionAdapter"
+    permission="zope.Public" />
+
+</configure>
