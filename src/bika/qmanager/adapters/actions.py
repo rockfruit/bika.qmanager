@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from senaite.queue import api
+from plone import api as ploneapi
 from senaite.queue.adapters.actions import WorkflowActionGenericAdapter
 
 
@@ -10,7 +11,11 @@ class WorkflowActionGenericQueueAdapter(WorkflowActionGenericAdapter):
 
     def do_action(self, action, objects):
 
-        # import pdb; pdb.set_trace()
+        worksheet_analyses = ploneapi.portal.get_registry_record('senaite.queue.worksheet_analyses')
+        if worksheet_analyses > len(objects):
+            return super(WorkflowActionGenericQueueAdapter, self).do_action(
+                action, objects)
+
         # Check context: if context is worksheet
 
         # samples_analyses, worksheet_analyses, coa_publication
