@@ -3,6 +3,8 @@
     xmlns:i18n="http://xml.zope.org/namespaces/i18n"
     i18n:domain="bika.qmanager">
 
-<!-- -*- extra stuff goes here -*- -->
+  <records
+      interface="bika.qmanager.browser.controlpanel.IBikaQueueControlPanel"
+      prefix="senaite.queue" />
 
 </registry>

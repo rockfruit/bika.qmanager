@@ -1,0 +1,15 @@
+<configure xmlns="http://namespaces.zope.org/zope"
+           xmlns:zcml="http://namespaces.zope.org/browser"
+           xmlns:fss="http://namespaces.zope.org/browser"
+           xmlns:browser="http://namespaces.zope.org/browser"
+           xmlns:five="http://namespaces.zope.org/five">
+
+  <!-- Queue Control panel -->
+  <browser:page
+    name="queue-controlpanel"
+    for="Products.CMFPlone.interfaces.IPloneSiteRoot"
+    class="bika.qmanager.browser.controlpanel.BikaQueueControlPanelView"
+    permission="senaite.core.permissions.ManageBika"
+    layer="senaite.queue.interfaces.ISenaiteQueueLayer" />
+
+</configure>
