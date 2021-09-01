@@ -6,11 +6,16 @@
            xmlns:five="http://namespaces.zope.org/five">
 
   <!-- Adapter for analyses action queue task -->
+
+  <!-- Sample: "receive"
+  Receives the analyses from a Samples folder by using a queue -->
   <adapter
-    name="task_action_publish"
-    factory="senaite.queue.adapters.QueuedActionTaskAdapter"
-    provides="senaite.queue.interfaces.IQueuedTaskAdapter"
-    for="bika.lims.interfaces.IWorksheet" />
+    name="workflow_action_receive"
+    for="senaite.core.interfaces.ISamples
+         senaite.queue.interfaces.ISenaiteQueueLayer"
+    factory=".adapters.actions.WorkflowActionGenericQueueAdapter"
+    provides="bika.lims.interfaces.IWorkflowActionAdapter"
+    permission="zope.Public" />
 
   <!-- Worksheet: "unassign"
   Submits the analyses from a worksheet by using a queue -->

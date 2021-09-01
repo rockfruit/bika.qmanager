@@ -11,6 +11,8 @@
       layer="bika.qmanager.interfaces.IBikaQmanagerLayer"
       />
 
+  <include package=".viewlets"/>
+
   <!-- Publish static files -->
   <plone:static
       name="bika.qmanager"
