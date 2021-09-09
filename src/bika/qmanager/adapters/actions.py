@@ -1,7 +1,28 @@
 # -*- coding: utf-8 -*-
-from senaite.queue import api
+
+from Products.Archetypes.interfaces.base import IBaseObject
 from plone import api as ploneapi
+from senaite.queue import api
+from bika.lims import api as bika_api
 from senaite.queue.adapters.actions import WorkflowActionGenericAdapter
+from senaite.queue.queue import get_chunks, get_chunk_size
+from senaite.queue.interfaces import IQueuedTaskAdapter
+from zope.interface import implements
+from zope.component import adapts
+from bika.lims.utils.analysisrequest import create_analysisrequest as crar
+from bika.lims import logger
+from plone.memoize import view as viewcache
+
+
+def get_chunks_for(task, items=None):
+    """Returns the items splitted into a list. The first element contains the
+    first chunk and the second element contains the rest of the items
+    """
+    if items is None:
+        items = task.get("records", [])
+
+    chunk_size = get_chunk_size(task.name)
+    return get_chunks(items, chunk_size)
 
 
 class WorkflowActionGenericQueueAdapter(WorkflowActionGenericAdapter):
@@ -39,3 +60,68 @@ class WorkflowActionGenericQueueAdapter(WorkflowActionGenericAdapter):
         # Delegate to base do_action
         return super(WorkflowActionGenericQueueAdapter, self).do_action(
             action, objects)
+
+
+class RegisterQueuedTaskAdapter(object):
+    """Adapter for register transition
+    """
+    implements(IQueuedTaskAdapter)
+    adapts(IBaseObject)
+
+    def __init__(self, context):
+        self.context = context
+
+    def process(self, task):
+        """Process the objects from the task
+        """
+        # If there are too many objects to process, split them in chunks to
+        chunks = get_chunks_for(task)
+
+        # Process the first chunk
+        map(self.create_ars, chunks[0])
+
+        # Add remaining objects to the queue
+        params = {"records": chunks[1]}
+        api.add_task('bika.qmanager.create_ars', self.context, **params)
+
+    def create_ars(self, record):
+        """Generates a dispatch report for this sample
+        """
+        client_uid = record.get("Client")
+        client = self.get_object_by_uid(client_uid)
+
+        if not client:
+            raise RuntimeError("No client found")
+
+        # Create the Analysis Request
+        try:
+            ar = crar(
+                client,
+                self.context,
+                record,
+            )
+        except (KeyError, RuntimeError) as e:
+            errors = {"message": e.message}
+            return {"errors": errors}
+
+        # for attachment in attachments.get(n, []):
+        #     if not attachment.filename:
+        #         continue
+        #     att = _createObjectByType("Attachment", client, tmpID())
+        #     att.setAttachmentFile(attachment)
+        #     att.processForm()
+        #     ar.addAttachment(att)
+
+    # N.B.: We are caching here persistent objects!
+    #       It should be safe to do this but only on the view object,
+    #       because it get recreated per request (transaction border).
+
+    @viewcache.memoize
+    def get_object_by_uid(self, uid):
+        """Get the object by UID
+        """
+        logger.debug("get_object_by_uid::UID={}".format(uid))
+        obj = bika_api.get_object_by_uid(uid, None)
+        if obj is None:
+            logger.warn("!! No object found for UID #{} !!")
+        return obj

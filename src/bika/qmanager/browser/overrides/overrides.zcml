@@ -12,4 +12,12 @@
     permission="senaite.core.permissions.ManageBika"
     layer="senaite.queue.interfaces.ISenaiteQueueLayer" />
 
+  <browser:page
+      for="*"
+      name="ajax_ar_add"
+      class="bika.qmanager.browser.analysisrequest.add.ajaxAnalysisRequestAddView"
+      permission="zope.Public"
+      layer="bika.lims.interfaces.IBikaLIMS"
+      />
+
 </configure>

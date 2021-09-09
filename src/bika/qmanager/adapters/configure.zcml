@@ -3,5 +3,10 @@
     xmlns:browser="http://namespaces.zope.org/browser"
     xmlns:zcml="http://namespaces.zope.org/zcml">
 
+    <adapter
+      name="bika.qmanager.create_ars"
+      factory="bika.qmanager.adapters.actions.RegisterQueuedTaskAdapter"
+      provides="senaite.queue.interfaces.IQueuedTaskAdapter"
+      for="*" />
 
 </configure>

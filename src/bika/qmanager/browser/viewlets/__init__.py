@@ -25,6 +25,14 @@ class QueuedSamplesSampleViewlet(ViewletBase):
 
         # We are only interested in tasks with uids
         queue = api.get_queue()
+        records = map(lambda t: t.get("records"), queue.get_tasks_for(self.context))
+        if records:
+            count = 0
+            for i in records:
+                for y in i:
+                    count += len(y['Analyses'])
+            return count
+
         uids = map(lambda t: t.get("uids"), queue.get_tasks_for(self.context))
         uids = filter(None, list(itertools.chain.from_iterable(uids)))
         return len(set(uids))
