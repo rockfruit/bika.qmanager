@@ -17,14 +17,14 @@ class IBikaQueueControlPanel(IQueueControlPanel):
     )
 
     samples_analyses = schema.Int(
-            title=_("Samples' Analyses"),
-            description=_("The nyaka limits are specified for the number of Samples Analyses"),
+            title=_("Samples Analyses"),
+            description=_("The limits that are specified for the number of Samples Analyses"),
             required=False,
         )
 
     worksheet_analyses = schema.Int(
             title=_("Worksheet Analyses"),
-            description=_("The limits are specified for the number of Worksheet Analyses"),
+            description=_("The limits that are specified for the number of Worksheet Analyses"),
             required=False,
         )
     coa_publication = schema.Bool(

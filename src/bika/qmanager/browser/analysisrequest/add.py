@@ -1,15 +1,26 @@
+# -*- coding: utf-8 -*-
+
+import json
+import six
+import base64
+from plone import api as ploneapi
+from zope.component import getAdapters
 from zope.interface import implements
 from zope.publisher.interfaces import IPublishTraverse
-from bika.lims.browser.analysisrequest.add2 import ajaxAnalysisRequestAddView as aARAV
+
 from bika.lims import api
-from senaite.queue import api as q_api
-import six
 from bika.lims import bikaMessageFactory as _
-from zope.component import getAdapters
+from bika.lims.browser.analysisrequest.add2 import ajaxAnalysisRequestAddView as aARAV
 from bika.lims.interfaces import IAddSampleRecordsValidator
+from senaite.queue import api as q_api
 
 
 class ajaxAnalysisRequestAddView(aARAV):
+    """ Overrides ajaxAnalysisRequestAddView.ajax_submit to submit the form of
+        Samples(ARs) creation and sends the Samples to be created on
+        senaite.queue
+    """
+
     implements(IPublishTraverse)
 
     def ajax_submit(self):
@@ -49,8 +60,7 @@ class ajaxAnalysisRequestAddView(aARAV):
             attachments[n] = map(lambda f: record.pop(f), file_fields)
 
             # Required fields and their values
-            required_keys = [field.getName() for field in fields
-                             if field.required]
+            required_keys = [field.getName() for field in fields if field.required]
             required_values = [record.get(key) for key in required_keys]
             required_fields = dict(zip(required_keys, required_values))
 
@@ -58,7 +68,7 @@ class ajaxAnalysisRequestAddView(aARAV):
             # it therefore from the list of required fields to let empty
             # columns pass the required check below.
             if record.get("Client", False):
-                required_fields.pop('Client', None)
+                required_fields.pop("Client", None)
 
             # Contacts get pre-filled out if only one contact exists.
             # We won't force those columns with only the Contact filled out to
@@ -95,32 +105,56 @@ class ajaxAnalysisRequestAddView(aARAV):
             valid_record = dict()
             for fieldname, fieldvalue in six.iteritems(record):
                 # clean empty
-                if fieldvalue in ['', None]:
+                if fieldvalue in ["", None]:
                     continue
                 valid_record[fieldname] = fieldvalue
 
             # append the valid record to the list of valid records
+            attachs = []
+            for attachment in attachments.get(n, []):
+                filename = attachment.filename
+                if not filename:
+                    continue
+                headers = attachment.headers.dict
+                data = {
+                    "title": n,
+                    "file": {
+                        "encoding": "base64",
+                        "filename": filename,
+                        "content-type": headers["content-type"],
+                    },
+                }
+                with open(attachment.name, mode="rb") as myfile:
+                    img = attachment.file.read()
+                    data["file"]["data"] = base64.b64encode(img)
+                    attachs.append(json.dumps(data))
+            valid_record["attachments"] = attachs
             valid_records.append(valid_record)
 
         # return immediately with an error response if some field checks failed
         if fielderrors:
             errors["fielderrors"] = fielderrors
-            return {'errors': errors}
+            return {"errors": errors}
 
         # do a custom validation of records. For instance, we may want to rise
         # an error if a value set to a given field is not consistent with a
         # value set to another field
-        validators = getAdapters((self.request, ), IAddSampleRecordsValidator)
+        validators = getAdapters((self.request,), IAddSampleRecordsValidator)
         for name, validator in validators:
             validation_err = validator.validate(valid_records)
             if validation_err:
                 # Not valid, return immediately with an error response
                 return {"errors": validation_err}
 
-        # samples_analyses = ploneapi.portal.get_registry_record('senaite.queue.samples_analyses')
-        # if samples_analyses > len(valid_records):
-        #     return super(ajaxAnalysisRequestAddView, self).ajax_submit(self)
+        samples_analyses = ploneapi.portal.get_registry_record(
+            "senaite.queue.samples_analyses"
+        )
+        count = 0
+        for i in valid_records:
+            count += len(i["Analyses"])
+        if samples_analyses < count:
+            return super(ajaxAnalysisRequestAddView, self).ajax_submit()
 
         params = {"records": valid_records}
         q_api.add_task("bika.qmanager.create_ars", self.context, **params)
-        return {'success': ''}
+        return {"success": ""}

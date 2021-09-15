@@ -10,11 +10,13 @@ class QueuedSamplesSampleViewlet(ViewletBase):
     """Prints a viewlet to display a message stating there are some analyses
     that are in queue to be assigned to a worksheet
     """
+
     index = ViewPageTemplateFile("templates/queued_samples_sample_viewlet.pt")
 
     def __init__(self, context, request, view, manager=None):
         super(QueuedSamplesSampleViewlet, self).__init__(
-            context, request, view, manager=manager)
+            context, request, view, manager=manager
+        )
         self.context = context
         self.request = request
         self.view = view
@@ -26,11 +28,11 @@ class QueuedSamplesSampleViewlet(ViewletBase):
         # We are only interested in tasks with uids
         queue = api.get_queue()
         records = map(lambda t: t.get("records"), queue.get_tasks_for(self.context))
-        if records:
+        if records != [None]:
             count = 0
             for i in records:
                 for y in i:
-                    count += len(y['Analyses'])
+                    count += len(y["Analyses"])
             return count
 
         uids = map(lambda t: t.get("uids"), queue.get_tasks_for(self.context))

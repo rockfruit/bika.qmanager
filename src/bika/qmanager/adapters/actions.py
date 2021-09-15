@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import json
+import base64
 from Products.Archetypes.interfaces.base import IBaseObject
 from plone import api as ploneapi
 from senaite.queue import api
@@ -12,6 +14,9 @@ from zope.component import adapts
 from bika.lims.utils.analysisrequest import create_analysisrequest as crar
 from bika.lims import logger
 from plone.memoize import view as viewcache
+from Products.CMFPlone.utils import _createObjectByType
+from bika.lims.utils import tmpID
+from plone.namedfile.file import NamedBlobFile
 
 
 def get_chunks_for(task, items=None):
@@ -34,19 +39,28 @@ class WorkflowActionGenericQueueAdapter(WorkflowActionGenericAdapter):
 
         do_queue = True
         # samples folder
-        if self.context.portal_type == 'Samples':
-            samples_analyses = ploneapi.portal.get_registry_record('senaite.queue.samples_analyses')
-            if samples_analyses > len(objects):
+        if self.context.portal_type == "Samples":
+            samples_analyses = ploneapi.portal.get_registry_record(
+                "senaite.queue.samples_analyses"
+            )
+            objs = []
+            for obj in objects:
+                analyses = obj.getAnalyses()
+                objs.extend(analyses)
+            if samples_analyses > len(objs):
                 do_queue = False
 
         # worksheets
-        if self.context.portal_type == 'Worksheet':
-            worksheet_analyses = ploneapi.portal.get_registry_record('senaite.queue.worksheet_analyses')
+        if self.context.portal_type == "Worksheet":
+            worksheet_analyses = ploneapi.portal.get_registry_record(
+                "senaite.queue.worksheet_analyses"
+            )
             if worksheet_analyses > len(objects):
                 do_queue = False
         if not do_queue:
             return super(WorkflowActionGenericQueueAdapter, self).do_action(
-                action, objects)
+                action, objects
+            )
 
         # samples_analyses, worksheet_analyses, coa_publication
         # Delegate to base do_action
@@ -58,13 +72,13 @@ class WorkflowActionGenericQueueAdapter(WorkflowActionGenericAdapter):
             return objects
 
         # Delegate to base do_action
-        return super(WorkflowActionGenericQueueAdapter, self).do_action(
-            action, objects)
+        return super(WorkflowActionGenericQueueAdapter, self).do_action(action, objects)
 
 
 class RegisterQueuedTaskAdapter(object):
     """Adapter for register transition
     """
+
     implements(IQueuedTaskAdapter)
     adapts(IBaseObject)
 
@@ -82,7 +96,7 @@ class RegisterQueuedTaskAdapter(object):
 
         # Add remaining objects to the queue
         params = {"records": chunks[1]}
-        api.add_task('bika.qmanager.create_ars', self.context, **params)
+        api.add_task("bika.qmanager.create_ars", self.context, **params)
 
     def create_ars(self, record):
         """Generates a dispatch report for this sample
@@ -95,22 +109,24 @@ class RegisterQueuedTaskAdapter(object):
 
         # Create the Analysis Request
         try:
-            ar = crar(
-                client,
-                self.context,
-                record,
-            )
+            ar = crar(client, self.context, record,)
         except (KeyError, RuntimeError) as e:
             errors = {"message": e.message}
             return {"errors": errors}
 
-        # for attachment in attachments.get(n, []):
-        #     if not attachment.filename:
-        #         continue
-        #     att = _createObjectByType("Attachment", client, tmpID())
-        #     att.setAttachmentFile(attachment)
-        #     att.processForm()
-        #     ar.addAttachment(att)
+        for rec in record["attachments"]:
+            att = _createObjectByType("Attachment", client, tmpID())
+            data = base64.b64decode(json.loads(rec)["file"]["data"].encode())
+            filename = json.loads(rec)["file"]["filename"]
+            content_type = json.loads(rec)["file"]["content-type"]
+            blob_data = NamedBlobFile(data, filename=filename)
+            att.AttachmentFile.blob = blob_data
+            att.AttachmentFile.blob.contentType = content_type
+            att.AttachmentFile.setFilename(filename)
+            att.AttachmentFile.setContentType(content_type)
+            att.setContentType(content_type)
+            att.processForm()
+            ar.addAttachment(att)
 
     # N.B.: We are caching here persistent objects!
     #       It should be safe to do this but only on the view object,
