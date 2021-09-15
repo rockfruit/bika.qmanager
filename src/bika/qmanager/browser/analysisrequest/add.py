@@ -152,7 +152,7 @@ class ajaxAnalysisRequestAddView(aARAV):
         count = 0
         for i in valid_records:
             count += len(i["Analyses"])
-        if samples_analyses < count:
+        if samples_analyses > count:
             return super(ajaxAnalysisRequestAddView, self).ajax_submit()
 
         params = {"records": valid_records}
