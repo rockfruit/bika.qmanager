@@ -25,16 +25,18 @@ class QueuedSamplesSampleViewlet(ViewletBase):
         if not api.is_queue_enabled():
             return 0
 
-        # We are only interested in tasks with uids
+        # Count Analyses per sample folder
         queue = api.get_queue()
-        records = map(lambda t: t.get("records"), queue.get_tasks_for(self.context))
-        if records != [None]:
+        records = filter(None, map(lambda t: t.get("records", ''), queue.get_tasks_for(self.context)))
+        if records:
             count = 0
             for i in records:
                 for y in i:
                     count += len(y["Analyses"])
             return count
 
+        # We are only interested in tasks with uids
+        # TODO: uids are sample uids, need to get the analyses count
         uids = map(lambda t: t.get("uids"), queue.get_tasks_for(self.context))
         uids = filter(None, list(itertools.chain.from_iterable(uids)))
         return len(set(uids))
