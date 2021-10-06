@@ -45,6 +45,16 @@ class ajaxAnalysisRequestAddView(aARAV):
         # Validate required fields
         for n, record in enumerate(records):
 
+            # Process textfield fields first and set their values to the linked field
+            # NOTE: Quickfix for RejectionReasons.textfield
+            text_fields = filter(lambda f: f.endswith(".textfield"), record)
+            for field in text_fields:
+                name = field.replace(".textfield", "")
+                value = record.get(field)
+                for i in value:
+                    value[value.index(i)] = dict(i)
+                    record[name] = value
+
             # Process UID fields first and set their values to the linked field
             uid_fields = filter(lambda f: f.endswith("_uid"), record)
             for field in uid_fields:
