@@ -24,7 +24,17 @@ def get_chunks_for(task, items=None):
     first chunk and the second element contains the rest of the items
     """
     if items is None:
-        items = task.get("records", [])
+        records = task.get("records", [])
+        items = records
+        # records contain Samples and a Sample contains analyses UIDs
+        # if the total number of analyses is greater than the Samples
+        # then do 1 Sample at a time
+        analyses = 0
+        for rec in records:
+            analyses += len(rec['Analyses'])
+        if analyses > len(records):
+            chunk_size = 1
+            return get_chunks(records, chunk_size)
 
     chunk_size = get_chunk_size(task.name)
     return get_chunks(items, chunk_size)
@@ -95,8 +105,9 @@ class RegisterQueuedTaskAdapter(object):
         map(self.create_ars, chunks[0])
 
         # Add remaining objects to the queue
-        params = {"records": chunks[1]}
-        api.add_task("bika.qmanager.create_ars", self.context, **params)
+        if chunks[1]:
+            params = {"records": chunks[1]}
+            api.add_task("bika.qmanager.create_ars", self.context, **params)
 
     def create_ars(self, record):
         """Generates a dispatch report for this sample
