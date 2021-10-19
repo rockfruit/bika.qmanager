@@ -14,7 +14,6 @@ from zope.interface import implements
 from zope.component import adapts
 from zope.component import getMultiAdapter
 from zope.component import getAdapter
-from zope.component import getUtility
 
 from bika.lims import api as bika_api
 from bika.lims import logger
@@ -23,7 +22,6 @@ from bika.lims.utils.analysisrequest import create_analysisrequest as crar
 
 from senaite.app.supermodel.interfaces import ISuperModel
 from senaite.impress.interfaces import IPdfReportStorage
-from senaite.impress.interfaces import IPublisher
 from senaite.impress.publisher import Publisher
 
 from senaite.queue import api
