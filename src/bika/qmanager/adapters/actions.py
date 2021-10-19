@@ -1,25 +1,38 @@
 # -*- coding: utf-8 -*-
 
-import json
+import ast
 import base64
+import json
+
+from DateTime import DateTime
 from Products.Archetypes.interfaces.base import IBaseObject
+from Products.CMFPlone.utils import _createObjectByType
 from plone import api as ploneapi
-from senaite.queue import api
-from bika.lims import api as bika_api
-from senaite.queue.adapters.actions import WorkflowActionGenericAdapter
-from senaite.queue.queue import get_chunks, get_chunk_size
-from senaite.queue.interfaces import IQueuedTaskAdapter
+from plone.memoize import view as viewcache
+from plone.namedfile.file import NamedBlobFile
 from zope.interface import implements
 from zope.component import adapts
-from bika.lims.utils.analysisrequest import create_analysisrequest as crar
+from zope.component import getMultiAdapter
+from zope.component import getAdapter
+from zope.component import getUtility
+
+from bika.lims import api as bika_api
 from bika.lims import logger
-from plone.memoize import view as viewcache
-from Products.CMFPlone.utils import _createObjectByType
 from bika.lims.utils import tmpID
-from plone.namedfile.file import NamedBlobFile
+from bika.lims.utils.analysisrequest import create_analysisrequest as crar
+
+from senaite.app.supermodel.interfaces import ISuperModel
+from senaite.impress.interfaces import IPdfReportStorage
+from senaite.impress.interfaces import IPublisher
+from senaite.impress.publisher import Publisher
+
+from senaite.queue import api
+from senaite.queue.adapters.actions import WorkflowActionGenericAdapter
+from senaite.queue.interfaces import IQueuedTaskAdapter
+from senaite.queue.queue import get_chunks, get_chunk_size, get_chunks_for
 
 
-def get_chunks_for(task, items=None):
+def get_chunks_for_registration(task, items=None):
     """Returns the items splitted into a list. The first element contains the
     first chunk and the second element contains the rest of the items
     """
@@ -72,7 +85,7 @@ class WorkflowActionGenericQueueAdapter(WorkflowActionGenericAdapter):
                 action, objects
             )
 
-        # samples_analyses, worksheet_analyses, coa_publication
+        # samples_analyses, worksheet_analyses
         # Delegate to base do_action
         # check here
         if api.is_queue_ready(action):
@@ -99,7 +112,7 @@ class RegisterQueuedTaskAdapter(object):
         """Process the objects from the task
         """
         # If there are too many objects to process, split them in chunks to
-        chunks = get_chunks_for(task)
+        chunks = get_chunks_for_registration(task)
 
         # Process the first chunk
         map(self.create_ars, chunks[0])
@@ -152,3 +165,111 @@ class RegisterQueuedTaskAdapter(object):
         if obj is None:
             logger.warn("!! No object found for UID #{} !!")
         return obj
+
+
+class PublishQueuedTaskAdapter(object):
+    """Adapter for publish transition
+    """
+
+    implements(IQueuedTaskAdapter)
+    adapts(IBaseObject)
+
+    def __init__(self, context):
+        self.context = context
+
+    def process(self, task):
+        """Process the objects from the task
+        """
+        # If there are too many objects to process, split them in chunks to
+        chunks = get_chunks_for(task)
+
+        # Process the first chunk
+        map(self.publish_samples, chunks[0])
+
+        # Add remaining objects to the queue
+        params = {"uids": chunks[1]}
+        api.add_task("bika.qmanager.publish_samples", self.context, **params)
+
+    def publish_samples(self, data):
+        """Generates a dispatch report for this sample
+        """
+
+        data = ast.literal_eval(data)
+        # get the selected paperformat
+        ajax_publish_view = getMultiAdapter((self.context, bika_api.get_request()), name=u'ajax_publish')
+        paperformat = data.get("format")
+        # get the selected orientation
+        orientation = data.get("orientation", "portrait")
+        # Generate the print CSS with the set format/orientation
+        css = ajax_publish_view.get_print_css(
+            paperformat=paperformat, orientation=orientation)
+        logger.info(u"Print CSS: {}".format(css))
+        # get the publisher instance
+        publisher = Publisher()
+        # add the generated CSS to the publisher
+        publisher.add_inline_css(css)
+        # This is the html after it was rendered by the client browser and
+        # eventually extended by JavaScript, e.g. Barcodes or Graphs added etc.
+        # NOTE: It might also contain multiple reports!
+        html = data.get("html")
+        # get COA number
+        parser = publisher.get_parser(html)
+        coa_num = parser.find_all(attrs={'name': 'coa_num'})
+        coa_num = coa_num.pop()
+        coa_num = coa_num.text.strip()
+
+        # adding to queue start here
+        # split the html per report
+        # NOTE: each report is an instance of <bs4.Tag>
+        html_reports = publisher.parse_reports(html)
+
+        # generate a PDF for each HTML report
+        pdf_reports = map(publisher.write_pdf, html_reports)
+
+        # extract the UIDs of each HTML report
+        # NOTE: UIDs are injected in `.analysisrequest.reportview.render`
+        report_uids = map(
+            lambda report: report.get("uids", "").split(","), html_reports)
+
+        # generate a CSV for each report_uids
+        samples = []
+        for sample in data['items']:
+            sample = getAdapter(sample, ISuperModel)
+            samples.append(sample)
+
+        # get the selected template
+        template = data.get("template")
+        csv_reports = []
+        publish_view = getMultiAdapter((self.context, bika_api.get_request()), name=u'publish')
+
+        is_multi_template = publish_view.is_multi_template(template)
+        if is_multi_template:
+            csv_report = ajax_publish_view.create_csv_reports(samples)
+            csv_reports = [csv_report for i in range(len(pdf_reports))]
+        else:
+            for sample_csv in samples:
+                csv_report = ajax_publish_view.create_csv_report(sample_csv)
+                csv_reports.append(csv_report)
+
+        # prepare some metadata
+        metadata = {
+            "template": template,
+            "paperformat": paperformat,
+            "orientation": orientation,
+            "timestamp": DateTime().ISO8601(),
+        }
+
+        # Create PDFs and HTML
+        # get the storage multi-adapter to save the generated PDFs
+        storage = getMultiAdapter(
+            (self.context, bika_api.get_request()), IPdfReportStorage)
+
+        for pdf, html, csv_text, uids in zip(pdf_reports, html_reports, csv_reports, report_uids):
+            # ensure we have valid UIDs here
+            uids = filter(bika_api.is_uid, uids)
+            # convert the bs4.Tag back to pure HTML
+            html = publisher.to_html(html)
+            # BBB: inject contained UIDs into metadata
+            metadata["contained_requests"] = uids
+            # store the report(s)
+            storage.store(pdf, html, uids, metadata=metadata, csv_text=csv_text, coa_num=coa_num)

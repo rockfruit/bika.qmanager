@@ -20,4 +20,13 @@
       layer="bika.lims.interfaces.IBikaLIMS"
       />
 
+  <!-- Ajax Publish View : ajax_publish -->
+  <browser:page
+      for="*"
+      name="ajax_publish"
+      class="bika.qmanager.ajax.AjaxPublishView"
+      permission="zope.Public"
+      layer="bika.coa.interfaces.IBikaCOALayer"
+      />
+
 </configure>
