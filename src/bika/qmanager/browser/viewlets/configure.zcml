@@ -4,15 +4,15 @@
     i18n_domain="senaite.queue">
 
 
-  <!-- Samples in queue: Sample -->
-  <browser:viewlet
-    for="senaite.core.interfaces.ISamples"
-    name="senaite.queue.samples_analyses_sample_queue_viewlet"
-    class=".QueuedSamplesSampleViewlet"
-    manager="plone.app.layout.viewlets.interfaces.IAboveContent"
-    template="templates/queued_samples_sample_viewlet.pt"
-    permission="zope2.View"
-    layer="bika.qmanager.interfaces.IBikaQmanagerLayer"
-  />
+<!-- Samples in queue: Sample -->
+    <browser:viewlet
+        for="*"
+        name="senaite.queue.samples_analyses_sample_queue_viewlet"
+        class=".QueuedSamplesSampleViewlet"
+        manager="plone.app.layout.viewlets.interfaces.IAboveContent"
+        template="templates/queued_samples_sample_viewlet.pt"
+        permission="zope2.View"
+        layer="bika.qmanager.interfaces.IBikaQmanagerLayer"
+    />
 
 </configure>

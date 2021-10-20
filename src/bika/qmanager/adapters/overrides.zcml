@@ -12,7 +12,8 @@
   <adapter
     name="workflow_action_receive"
     for="senaite.core.interfaces.ISamples
-         senaite.queue.interfaces.ISenaiteQueueLayer"
+         senaite.queue.interfaces.ISenaiteQueueLayer
+         bika.lims.interfaces.IClient"
     factory=".adapters.actions.WorkflowActionGenericQueueAdapter"
     provides="bika.lims.interfaces.IWorkflowActionAdapter"
     permission="zope.Public" />
@@ -32,7 +33,8 @@
   <adapter
     name="workflow_action_submit"
     for="bika.lims.interfaces.IWorksheet
-         senaite.queue.interfaces.ISenaiteQueueLayer"
+         senaite.queue.interfaces.ISenaiteQueueLayer
+         bika.lims.interfaces.IClient"
     factory=".adapters.actions.WorkflowActionGenericQueueAdapter"
     provides="bika.lims.interfaces.IWorkflowActionAdapter"
     permission="zope.Public" />
