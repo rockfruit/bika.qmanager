@@ -11,9 +11,8 @@
   Receives the analyses from a Samples folder by using a queue -->
   <adapter
     name="workflow_action_receive"
-    for="senaite.core.interfaces.ISamples
-         senaite.queue.interfaces.ISenaiteQueueLayer
-         bika.lims.interfaces.IClient"
+    for="*
+         senaite.queue.interfaces.ISenaiteQueueLayer"
     factory=".adapters.actions.WorkflowActionGenericQueueAdapter"
     provides="bika.lims.interfaces.IWorkflowActionAdapter"
     permission="zope.Public" />
@@ -33,8 +32,7 @@
   <adapter
     name="workflow_action_submit"
     for="bika.lims.interfaces.IWorksheet
-         senaite.queue.interfaces.ISenaiteQueueLayer
-         bika.lims.interfaces.IClient"
+         senaite.queue.interfaces.ISenaiteQueueLayer"
     factory=".adapters.actions.WorkflowActionGenericQueueAdapter"
     provides="bika.lims.interfaces.IWorkflowActionAdapter"
     permission="zope.Public" />
