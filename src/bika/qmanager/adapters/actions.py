@@ -3,10 +3,12 @@
 import ast
 import base64
 import json
+import transaction
 
 from DateTime import DateTime
 from Products.Archetypes.interfaces.base import IBaseObject
 from Products.CMFPlone.utils import _createObjectByType
+from Products.CMFCore.WorkflowCore import WorkflowException
 from plone import api as ploneapi
 from plone.memoize import view as viewcache
 from plone.namedfile.file import NamedBlobFile
@@ -185,8 +187,9 @@ class PublishQueuedTaskAdapter(object):
         map(self.publish_samples, chunks[0])
 
         # Add remaining objects to the queue
-        params = {"uids": chunks[1]}
-        api.add_task("bika.qmanager.publish_samples", self.context, **params)
+        if chunks[1]:
+            params = {"uids": chunks[1]}
+            api.add_task("bika.qmanager.publish_samples", self.context, **params)
 
     def publish_samples(self, data):
         """Generates a dispatch report for this sample
@@ -271,3 +274,28 @@ class PublishQueuedTaskAdapter(object):
             metadata["contained_requests"] = uids
             # store the report(s)
             storage.store(pdf, html, uids, metadata=metadata, csv_text=csv_text, coa_num=coa_num)
+
+        # publish all samples
+        for sample in samples:
+            self.publish(sample)
+
+    def publish(self, sample):
+        """Set status to prepublished/published/republished
+        """
+        wf = bika_api.get_tool("portal_workflow")
+        obj = sample.brain.getObject()
+        status = wf.getInfoFor(obj, "review_state")
+        transitions = {"verified": "publish",
+                       "published": "republish"}
+        transition = transitions.get(status, "prepublish")
+        logger.info("Transitioning sample {}: {} -> {}".format(
+            bika_api.get_id(sample), status, transition))
+        try:
+            # Manually update the view on the database to avoid conflict errors
+            sample.getClient()._p_jar.sync()
+            # Perform WF transition
+            wf.doActionFor(obj, transition)
+            # Commit the changes
+            transaction.commit()
+        except WorkflowException as e:
+            logger.error(e)

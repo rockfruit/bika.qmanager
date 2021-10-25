@@ -42,7 +42,21 @@ class QueuedSamplesSampleViewlet(ViewletBase):
         # Count Analyses per sample folder
         queue = api.get_queue()
 
-        # TODO: uids are sample uids, need to get the analyses count
+        tasks = queue.get_tasks_for(self.context)
+        if tasks and tasks[0]['name'] == 'bika.qmanager.publish_samples':
+            return 0
         uids = map(lambda t: t.get("uids"), queue.get_tasks_for(self.context))
         uids = filter(None, list(itertools.chain.from_iterable(uids)))
         return len(set(uids))
+
+    def get_is_published_pending(self):
+        if not api.is_queue_enabled():
+            return 0
+
+        # Count Analyses per sample folder
+        queue = api.get_queue()
+
+        tasks = queue.get_tasks_for(self.context)
+        if tasks and tasks[0].get("name") == "bika.qmanager.publish_samples":
+            return True
+        return False

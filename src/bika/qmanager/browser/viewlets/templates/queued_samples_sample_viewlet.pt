@@ -1,7 +1,8 @@
 <div tal:omit-tag=""
      tal:define="num_analyses python:view.get_num_analyses_pending();
-                 num_samples python:view.get_num_samples_pending()"
-     tal:condition="python:num_analyses &gt; 0 or num_samples &gt; 0"
+                 num_samples python:view.get_num_samples_pending();
+                 is_published python:view.get_is_published_pending()"
+     tal:condition="python:num_analyses &gt; 0 or num_samples &gt; 0 or is_published"
      i18n:domain="bika.qmanager">
 
   <div class="visualClear"></div>
@@ -13,15 +14,24 @@
       </button>
       <strong>Samples in process</strong>
       <p class="title">
-        <span tal:content="num_analyses" tal:condition="python: num_analyses > 0 "></span>&nbsp;
-        <span i18n:translate="" tal:condition="python: num_analyses == 1"> analysis is being processed in background</span>
-        <span i18n:translate="" tal:condition="python: num_analyses > 1"> analyses are being processed in background</span>&nbsp;
+        <div tal:condition="python: num_analyses > 0">
+            <span tal:content="num_analyses" tal:condition="python: num_analyses > 0"></span>&nbsp;
+            <span i18n:translate="" tal:condition="python: num_analyses == 1"> analysis is being processed in background</span>
+            <span i18n:translate="" tal:condition="python: num_analyses > 1"> analyses are being processed in background</span>&nbsp;
+        </div>
 
-        <span tal:content="num_samples" tal:condition="python: num_samples > 0"></span>&nbsp;
-        <span i18n:translate="" tal:condition="python: num_samples == 1"> sample is being processed in background</span>
-        <span i18n:translate="" tal:condition="python: num_samples > 1"> samples are being processed in background</span>&nbsp;
-        <a tal:attributes="href python:view.context.absolute_url()"
-           class="btn btn-default">Refresh</a>
+        <div tal:condition="python: num_samples > 1 ">
+            <span tal:content="num_samples" tal:condition="python: num_samples > 0"></span>&nbsp;
+            <span i18n:translate="" tal:condition="python: num_samples == 1"> sample is being processed in background</span>
+            <span i18n:translate="" tal:condition="python: num_samples > 1"> samples are being processed in background</span>&nbsp;
+        </div>
+            <div tal:condition="python: is_published">
+                <span i18n:translate=""> Samples are being processed for publishing in background</span>&nbsp;
+            </div>
+        <div>
+            <a tal:attributes="href python:view.context.absolute_url()"
+               class="">Refresh</a>
+       </div>
       </p>
     </div>
   </div>
