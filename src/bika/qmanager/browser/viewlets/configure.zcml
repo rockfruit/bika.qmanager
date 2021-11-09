@@ -6,8 +6,26 @@
 
 <!-- Samples in queue: Sample -->
     <browser:viewlet
-        for="*"
+        for="senaite.core.interfaces.ISamples"
         name="senaite.queue.samples_analyses_sample_queue_viewlet"
+        class=".QueuedSamplesSampleViewlet"
+        manager="plone.app.layout.viewlets.interfaces.IAboveContent"
+        template="templates/queued_samples_sample_viewlet.pt"
+        permission="zope2.View"
+        layer="bika.qmanager.interfaces.IBikaQmanagerLayer"
+    />
+    <browser:viewlet
+        for="bika.lims.interfaces.IBatch"
+        name="senaite.queue.batch_samples_analyses_sample_queue_viewlet"
+        class=".QueuedSamplesSampleViewlet"
+        manager="plone.app.layout.viewlets.interfaces.IAboveContent"
+        template="templates/queued_samples_sample_viewlet.pt"
+        permission="zope2.View"
+        layer="bika.qmanager.interfaces.IBikaQmanagerLayer"
+    />
+    <browser:viewlet
+        for="bika.lims.interfaces.IClient"
+        name="senaite.queue.samples_client_sample_queue_viewlet"
         class=".QueuedSamplesSampleViewlet"
         manager="plone.app.layout.viewlets.interfaces.IAboveContent"
         template="templates/queued_samples_sample_viewlet.pt"
