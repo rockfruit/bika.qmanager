@@ -15,6 +15,7 @@
 
   <include package=".adapters"/>
   <include package=".browser" />
+  <include package=".monkeys"/>
 
   <include file="permissions.zcml" />
 
