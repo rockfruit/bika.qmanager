@@ -1,26 +1,24 @@
 # -*- coding: utf-8 -*-
-import transaction
-import unittest2 as unittest
 from plone.app.robotframework.testing import REMOTE_LIBRARY_BUNDLE_FIXTURE
-from plone.app.testing import (
-    applyProfile,
-    login,
-    setRoles,
-    FunctionalTesting,
-    IntegrationTesting,
-    PloneSandboxLayer,
-    TEST_USER_ID,
-    TEST_USER_NAME,
-    TEST_USER_PASSWORD,
-)
+from plone.app.testing import FunctionalTesting
+from plone.app.testing import IntegrationTesting
+from plone.app.testing import PloneSandboxLayer
+from plone.app.testing import TEST_USER_ID
+from plone.app.testing import TEST_USER_NAME
+from plone.app.testing import TEST_USER_PASSWORD
+from plone.app.testing import applyProfile
+from plone.app.testing import login
+from plone.app.testing import setRoles
 from plone.testing import z2
 from plone.testing import zope
 from plone.testing.z2 import Browser
 from senaite.queue.tests.base import SIMPLE_TESTING
 
+import transaction
+import unittest2 as unittest
+
 
 class BikaQmanagerLayer(PloneSandboxLayer):
-
     defaultBases = (SIMPLE_TESTING,)
 
     def setUpZope(self, app, configurationContext):
@@ -49,14 +47,13 @@ BIKA_QMANAGER_INTEGRATION_TESTING = IntegrationTesting(
     bases=(BIKA_QMANAGER_FIXTURE,), name="BikaQmanagerLayer:IntegrationTesting",
 )
 
-
 BIKA_QMANAGER_FUNCTIONAL_TESTING = FunctionalTesting(
     bases=(BIKA_QMANAGER_FIXTURE,), name="BikaQmanagerLayer:FunctionalTesting",
 )
 
-
 BIKA_QMANAGER_ACCEPTANCE_TESTING = FunctionalTesting(
-    bases=(BIKA_QMANAGER_FIXTURE, REMOTE_LIBRARY_BUNDLE_FIXTURE, z2.ZSERVER_FIXTURE,),
+    bases=(
+    BIKA_QMANAGER_FIXTURE, REMOTE_LIBRARY_BUNDLE_FIXTURE, z2.ZSERVER_FIXTURE,),
     name="BikaQmanagerLayer:AcceptanceTesting",
 )
 
@@ -79,9 +76,9 @@ class SimpleTestCase(unittest.TestCase):
         setRoles(self.portal, TEST_USER_ID, ["LabManager", "Manager"])
 
     def getBrowser(
-        self, username=TEST_USER_NAME, password=TEST_USER_PASSWORD, loggedIn=True
+        self, username=TEST_USER_NAME, password=TEST_USER_PASSWORD,
+        loggedIn=True
     ):
-
         # Instantiate and return a testbrowser for convenience
         browser = Browser(self.portal)
         browser.addHeader("Accept-Language", "en-US")

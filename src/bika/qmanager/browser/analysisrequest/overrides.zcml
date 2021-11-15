@@ -4,10 +4,12 @@
            xmlns:five="http://namespaces.zope.org/five"
            xmlns="http://namespaces.zope.org/zope">
 
-  <include package=".adapters"/>
-  <include file="adapters/overrides.zcml"/>
-  <include file="browser/overrides.zcml"/>
+  <browser:page
+    for="*"
+    name="ajax_ar_add"
+    class="bika.qmanager.browser.analysisrequest.add.ajaxAnalysisRequestAddView"
+    permission="zope.Public"
+    layer="bika.qmanager.interfaces.IBikaQmanagerLayer"/>
 
 </configure>
-
 

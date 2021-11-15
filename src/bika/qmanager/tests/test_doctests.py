@@ -21,10 +21,11 @@
 import doctest
 from os.path import join
 
+from bika.qmanager.testing import SimpleTestCase
+
 import unittest2 as unittest
 from Testing import ZopeTestCase as ztc
 from pkg_resources import resource_listdir
-from bika.qmanager.testing import SimpleTestCase
 
 # Option flags for doctests
 flags = doctest.ELLIPSIS | doctest.NORMALIZE_WHITESPACE | doctest.REPORT_NDIFF

@@ -1,18 +1,18 @@
 <configure
-    xmlns="http://namespaces.zope.org/zope"
-    xmlns:browser="http://namespaces.zope.org/browser"
-    xmlns:zcml="http://namespaces.zope.org/zcml">
+  xmlns:browser="http://namespaces.zope.org/browser"
+  xmlns:zcml="http://namespaces.zope.org/zcml"
+  xmlns="http://namespaces.zope.org/zope">
 
-    <adapter
-      name="bika.qmanager.create_ars"
-      factory="bika.qmanager.adapters.actions.RegisterQueuedTaskAdapter"
-      provides="senaite.queue.interfaces.IQueuedTaskAdapter"
-      for="*" />
+  <adapter
+    name="bika.qmanager.create_ars"
+    factory="bika.qmanager.adapters.actions.RegisterQueuedTaskAdapter"
+    provides="senaite.queue.interfaces.IQueuedTaskAdapter"
+    for="*"/>
 
-    <adapter
-      name="bika.qmanager.publish_samples"
-      factory="bika.qmanager.adapters.actions.PublishQueuedTaskAdapter"
-      provides="senaite.queue.interfaces.IQueuedTaskAdapter"
-      for="*" />
+  <adapter
+    name="bika.qmanager.publish_samples"
+    factory="bika.qmanager.adapters.actions.PublishQueuedTaskAdapter"
+    provides="senaite.queue.interfaces.IQueuedTaskAdapter"
+    for="*"/>
 
 </configure>

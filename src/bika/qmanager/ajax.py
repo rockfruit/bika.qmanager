@@ -1,15 +1,7 @@
-import csv
-from plone import api as ploneapi
 from bika.coa.ajax import AjaxPublishView as BCAP
-from bika.lims import api
-from DateTime import DateTime
-from senaite.app.supermodel.interfaces import ISuperModel
-from senaite.impress.interfaces import IPdfReportStorage
-from senaite.impress.interfaces import ITemplateFinder
 from senaite.queue import api as q_api
-from zope.component import getMultiAdapter
-from zope.component import getAdapter
-from zope.component import getUtility
+
+from plone import api as ploneapi
 
 
 class AjaxPublishView(BCAP):

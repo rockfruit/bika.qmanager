@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
-"""Module where all interfaces, events and exceptions live."""
-
-from zope.publisher.interfaces.browser import IDefaultBrowserLayer
+from bika.lims.interfaces import IBikaLIMS
 
 
-class IBikaQmanagerLayer(IDefaultBrowserLayer):
+class IBikaQmanagerLayer(IBikaLIMS):
     """Marker interface that defines a browser layer."""

@@ -1,18 +1,20 @@
 # -*- coding: utf-8 -*-
 
-import json
-import six
 import base64
+import json
+
+from bika.lims import api
+from bika.lims import bikaMessageFactory as _
+from bika.lims.browser.analysisrequest.add2 import \
+    ajaxAnalysisRequestAddView as aARAV
+from bika.lims.interfaces import IAddSampleRecordsValidator
+from senaite.queue import api as q_api
+
+import six
 from plone import api as ploneapi
 from zope.component import getAdapters
 from zope.interface import implements
 from zope.publisher.interfaces import IPublishTraverse
-
-from bika.lims import api
-from bika.lims import bikaMessageFactory as _
-from bika.lims.browser.analysisrequest.add2 import ajaxAnalysisRequestAddView as aARAV
-from bika.lims.interfaces import IAddSampleRecordsValidator
-from senaite.queue import api as q_api
 
 
 class ajaxAnalysisRequestAddView(aARAV):
@@ -45,7 +47,8 @@ class ajaxAnalysisRequestAddView(aARAV):
         # Validate required fields
         for n, record in enumerate(records):
 
-            # Process textfield fields first and set their values to the linked field
+            # Process textfield fields first and set their values to the
+            # linked field
             # NOTE: Quickfix for RejectionReasons.textfield
             text_fields = filter(lambda f: f.endswith(".textfield"), record)
             for field in text_fields:
@@ -70,7 +73,8 @@ class ajaxAnalysisRequestAddView(aARAV):
             attachments[n] = map(lambda f: record.pop(f), file_fields)
 
             # Required fields and their values
-            required_keys = [field.getName() for field in fields if field.required]
+            required_keys = [field.getName() for field in fields if
+                             field.required]
             required_values = [record.get(key) for key in required_keys]
             required_fields = dict(zip(required_keys, required_values))
 

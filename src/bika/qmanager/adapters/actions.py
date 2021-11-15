@@ -3,33 +3,34 @@
 import ast
 import base64
 import json
-import transaction
-
-from DateTime import DateTime
-from Products.Archetypes.interfaces.base import IBaseObject
-from Products.CMFPlone.utils import _createObjectByType
-from Products.CMFCore.WorkflowCore import WorkflowException
-from plone import api as ploneapi
-from plone.memoize import view as viewcache
-from plone.namedfile.file import NamedBlobFile
-from zope.interface import implements
-from zope.component import adapts
-from zope.component import getMultiAdapter
-from zope.component import getAdapter
 
 from bika.lims import api as bika_api
 from bika.lims import logger
 from bika.lims.utils import tmpID
 from bika.lims.utils.analysisrequest import create_analysisrequest as crar
-
+from bika.qmanager import is_installed
 from senaite.app.supermodel.interfaces import ISuperModel
 from senaite.impress.interfaces import IPdfReportStorage
 from senaite.impress.publisher import Publisher
-
 from senaite.queue import api
 from senaite.queue.adapters.actions import WorkflowActionGenericAdapter
 from senaite.queue.interfaces import IQueuedTaskAdapter
-from senaite.queue.queue import get_chunks, get_chunk_size, get_chunks_for
+from senaite.queue.queue import get_chunk_size
+from senaite.queue.queue import get_chunks
+from senaite.queue.queue import get_chunks_for
+
+import transaction
+from DateTime import DateTime
+from Products.Archetypes.interfaces.base import IBaseObject
+from Products.CMFCore.WorkflowCore import WorkflowException
+from Products.CMFPlone.utils import _createObjectByType
+from plone import api as ploneapi
+from plone.memoize import view as viewcache
+from plone.namedfile.file import NamedBlobFile
+from zope.component import adapts
+from zope.component import getAdapter
+from zope.component import getMultiAdapter
+from zope.interface import implements
 
 
 def get_chunks_for_registration(task, items=None):
@@ -59,6 +60,9 @@ class WorkflowActionGenericQueueAdapter(WorkflowActionGenericAdapter):
     """
 
     def do_action(self, action, objects):
+
+        if not is_installed():
+            return
 
         do_queue = True
         # samples folder
@@ -95,7 +99,8 @@ class WorkflowActionGenericQueueAdapter(WorkflowActionGenericAdapter):
             return objects
 
         # Delegate to base do_action
-        return super(WorkflowActionGenericQueueAdapter, self).do_action(action, objects)
+        return super(WorkflowActionGenericQueueAdapter, self).do_action(action,
+                                                                        objects)
 
 
 class RegisterQueuedTaskAdapter(object):
@@ -128,12 +133,15 @@ class RegisterQueuedTaskAdapter(object):
         client_uid = record.get("Client")
         client = self.get_object_by_uid(client_uid)
 
+        if not is_installed():
+            return
+
         if not client:
             raise RuntimeError("No client found")
 
         # Create the Analysis Request
         try:
-            ar = crar(client, self.context, record,)
+            ar = crar(client, self.context, record, )
         except (KeyError, RuntimeError) as e:
             errors = {"message": e.message}
             return {"errors": errors}
@@ -189,7 +197,8 @@ class PublishQueuedTaskAdapter(object):
         # Add remaining objects to the queue
         if chunks[1]:
             params = {"uids": chunks[1]}
-            api.add_task("bika.qmanager.publish_samples", self.context, **params)
+            api.add_task("bika.qmanager.publish_samples", self.context,
+                         **params)
 
     def publish_samples(self, data):
         """Generates a dispatch report for this sample
@@ -197,7 +206,8 @@ class PublishQueuedTaskAdapter(object):
 
         data = ast.literal_eval(data)
         # get the selected paperformat
-        ajax_publish_view = getMultiAdapter((self.context, bika_api.get_request()), name=u'ajax_publish')
+        ajax_publish_view = getMultiAdapter(
+            (self.context, bika_api.get_request()), name=u'ajax_publish')
         paperformat = data.get("format")
         # get the selected orientation
         orientation = data.get("orientation", "portrait")
@@ -241,7 +251,8 @@ class PublishQueuedTaskAdapter(object):
         # get the selected template
         template = data.get("template")
         csv_reports = []
-        publish_view = getMultiAdapter((self.context, bika_api.get_request()), name=u'publish')
+        publish_view = getMultiAdapter((self.context, bika_api.get_request()),
+                                       name=u'publish')
 
         is_multi_template = publish_view.is_multi_template(template)
         if is_multi_template:
@@ -265,7 +276,8 @@ class PublishQueuedTaskAdapter(object):
         storage = getMultiAdapter(
             (self.context, bika_api.get_request()), IPdfReportStorage)
 
-        for pdf, html, csv_text, uids in zip(pdf_reports, html_reports, csv_reports, report_uids):
+        for pdf, html, csv_text, uids in zip(pdf_reports, html_reports,
+                                             csv_reports, report_uids):
             # ensure we have valid UIDs here
             uids = filter(bika_api.is_uid, uids)
             # convert the bs4.Tag back to pure HTML
@@ -273,7 +285,8 @@ class PublishQueuedTaskAdapter(object):
             # BBB: inject contained UIDs into metadata
             metadata["contained_requests"] = uids
             # store the report(s)
-            storage.store(pdf, html, uids, metadata=metadata, csv_text=csv_text, coa_num=coa_num)
+            storage.store(pdf, html, uids, metadata=metadata, csv_text=csv_text,
+                          coa_num=coa_num)
 
         # publish all samples
         for sample in samples:

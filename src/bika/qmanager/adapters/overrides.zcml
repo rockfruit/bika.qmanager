@@ -1,80 +1,63 @@
-
-<configure xmlns="http://namespaces.zope.org/zope"
-           xmlns:zcml="http://namespaces.zope.org/browser"
+<configure xmlns:zcml="http://namespaces.zope.org/browser"
            xmlns:fss="http://namespaces.zope.org/browser"
            xmlns:browser="http://namespaces.zope.org/browser"
-           xmlns:five="http://namespaces.zope.org/five">
+           xmlns:five="http://namespaces.zope.org/five"
+           xmlns="http://namespaces.zope.org/zope">
 
-  <!-- Adapter for analyses action queue task -->
-
-  <!-- Sample: "receive"
-  Receives the analyses from a Samples folder by using a queue -->
   <adapter
     name="workflow_action_receive"
     for="*
-         senaite.queue.interfaces.ISenaiteQueueLayer"
+         bika.qmanager.interfaces.IBikaQmanagerLayer"
     factory=".adapters.actions.WorkflowActionGenericQueueAdapter"
     provides="bika.lims.interfaces.IWorkflowActionAdapter"
-    permission="zope.Public" />
+    permission="zope.Public"/>
 
-  <!-- Worksheet: "unassign"
-  Submits the analyses from a worksheet by using a queue -->
   <adapter
     name="workflow_action_unassign"
     for="bika.lims.interfaces.IWorksheet
-         senaite.queue.interfaces.ISenaiteQueueLayer"
+         bika.qmanager.interfaces.IBikaQmanagerLayer"
     factory=".adapters.actions.WorkflowActionGenericQueueAdapter"
     provides="bika.lims.interfaces.IWorkflowActionAdapter"
-    permission="zope.Public" />
+    permission="zope.Public"/>
 
-  <!-- Worksheet: "submit"
-  Submits the analyses from a worksheet by using a queue -->
   <adapter
     name="workflow_action_submit"
     for="bika.lims.interfaces.IWorksheet
-         senaite.queue.interfaces.ISenaiteQueueLayer"
+         bika.qmanager.interfaces.IBikaQmanagerLayer"
     factory=".adapters.actions.WorkflowActionGenericQueueAdapter"
     provides="bika.lims.interfaces.IWorkflowActionAdapter"
-    permission="zope.Public" />
+    permission="zope.Public"/>
 
-  <!-- Worksheet: "reject"
-  Reject the analyses from a worksheet by using a queue -->
   <adapter
     name="workflow_action_reject"
     for="bika.lims.interfaces.IWorksheet
-         senaite.queue.interfaces.ISenaiteQueueLayer"
+         bika.qmanager.interfaces.IBikaQmanagerLayer"
     factory=".adapters.actions.WorkflowActionGenericQueueAdapter"
     provides="bika.lims.interfaces.IWorkflowActionAdapter"
-    permission="zope.Public" />
+    permission="zope.Public"/>
 
-  <!-- Worksheet: "retract"
-  Reject the analyses from a worksheet by using a queue -->
   <adapter
     name="workflow_action_retract"
     for="bika.lims.interfaces.IWorksheet
-         senaite.queue.interfaces.ISenaiteQueueLayer"
+         bika.qmanager.interfaces.IBikaQmanagerLayer"
     factory=".adapters.actions.WorkflowActionGenericQueueAdapter"
     provides="bika.lims.interfaces.IWorkflowActionAdapter"
-    permission="zope.Public" />
+    permission="zope.Public"/>
 
-  <!-- Worksheet: "verify"
-  Verify the analyses from a worksheet by using a queue -->
   <adapter
     name="workflow_action_verify"
     for="bika.lims.interfaces.IWorksheet
-         senaite.queue.interfaces.ISenaiteQueueLayer"
+         bika.qmanager.interfaces.IBikaQmanagerLayer"
     factory=".adapters.actions.WorkflowActionGenericQueueAdapter"
     provides="bika.lims.interfaces.IWorkflowActionAdapter"
-    permission="zope.Public" />
+    permission="zope.Public"/>
 
-  <!-- Worksheet: "publish"
-  Verify the analyses from a worksheet by using a queue -->
   <adapter
     name="workflow_action_publish"
     for="bika.lims.interfaces.IWorksheet
-         senaite.queue.interfaces.ISenaiteQueueLayer"
+         bika.qmanager.interfaces.IBikaQmanagerLayer"
     factory=".adapters.actions.WorkflowActionGenericQueueAdapter"
     provides="bika.lims.interfaces.IWorkflowActionAdapter"
-    permission="zope.Public" />
+    permission="zope.Public"/>
 
 </configure>

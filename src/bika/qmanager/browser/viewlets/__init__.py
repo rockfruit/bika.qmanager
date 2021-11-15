@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import itertools
-from plone.app.layout.viewlets import ViewletBase
-from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
+
 from senaite.queue import api
+
+from Products.Five.browser.pagetemplatefile import ViewPageTemplateFile
+from plone.app.layout.viewlets import ViewletBase
 
 
 class QueuedSamplesSampleViewlet(ViewletBase):
@@ -27,7 +29,8 @@ class QueuedSamplesSampleViewlet(ViewletBase):
 
         # Count Analyses per sample folder
         queue = api.get_queue()
-        records = filter(None, map(lambda t: t.get("records", ''), queue.get_tasks_for(self.context)))
+        records = filter(None, map(lambda t: t.get("records", ''),
+                                   queue.get_tasks_for(self.context)))
         if records:
             count = 0
             for i in records:

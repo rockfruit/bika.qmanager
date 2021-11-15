@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import os
-import pkg_resources
 import subprocess
 
+import pkg_resources
 
 domain = 'bika.qmanager'
 os.chdir(pkg_resources.resource_filename(domain, ''))
@@ -26,7 +26,9 @@ def locale_folder_setup():
         else:
             lc_messages_path = lang + '/LC_MESSAGES/'
             os.mkdir(lc_messages_path)
-            cmd = 'msginit --locale={0} --input={1}.pot --output={2}/LC_MESSAGES/{3}.po'.format(  # NOQA: E501
+            cmd = 'msginit --locale={0} --input={1}.pot --output={' \
+                  '2}/LC_MESSAGES/{3}.po'.format(
+                # NOQA: E501
                 lang,
                 domain,
                 lang,
@@ -41,7 +43,9 @@ def locale_folder_setup():
 
 
 def _rebuild():
-    cmd = '{i18ndude} rebuild-pot --pot {locale_path}/{domain}.pot --exclude {excludes} --create {domain} {target_path}'.format(  # NOQA: E501
+    cmd = '{i18ndude} rebuild-pot --pot {locale_path}/{domain}.pot --exclude ' \
+          '{excludes} --create {domain} {target_path}'.format(
+        # NOQA: E501
         i18ndude=i18ndude,
         locale_path=locale_path,
         domain=domain,

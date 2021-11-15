@@ -1,15 +1,15 @@
 <configure
-    xmlns="http://namespaces.zope.org/zope"
-    xmlns:monkey="http://namespaces.plone.org/monkey"
-    i18n_domain="senaite.queue">
+  xmlns:monkey="http://namespaces.plone.org/monkey"
+  xmlns="http://namespaces.zope.org/zope"
+  i18n_domain="senaite.queue">
 
 
   <!-- Monkey patch for asynchronous assignment of analyses -->
   <monkey:patch
-     description=""
-     class="bika.lims.content.worksheet.Worksheet"
-     original="addAnalyses"
-     replacement=".content.worksheet.addAnalyses"
+    description=""
+    class="bika.lims.content.worksheet.Worksheet"
+    original="addAnalyses"
+    replacement=".worksheet.addAnalyses"
   />
 
 

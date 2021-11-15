@@ -2,7 +2,6 @@
 """Setup tests for this package."""
 from bika.qmanager.testing import SimpleTestCase  # noqa: E501
 
-
 try:
     from Products.CMFPlone.utils import get_installer
 except ImportError:
