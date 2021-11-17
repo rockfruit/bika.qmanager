@@ -10,15 +10,14 @@
     for="Products.CMFPlone.interfaces.IPloneSiteRoot"
     class="bika.qmanager.browser.controlpanel.BikaQueueControlPanelView"
     permission="senaite.core.permissions.ManageBika"
-    layer="senaite.queue.interfaces.ISenaiteQueueLayer" />
+    layer="bika.qmanager.interfaces.IBikaQmanagerLayer"/>
 
   <browser:page
       for="*"
       name="ajax_ar_add"
       class="bika.qmanager.browser.analysisrequest.add.ajaxAnalysisRequestAddView"
       permission="zope.Public"
-      layer="bika.lims.interfaces.IBikaLIMS"
-      />
+      layer="bika.qmanager.interfaces.IBikaQmanagerLayer"/>
 
   <!-- Ajax Publish View : ajax_publish -->
   <browser:page
@@ -26,7 +25,6 @@
       name="ajax_publish"
       class="bika.qmanager.ajax.AjaxPublishView"
       permission="zope.Public"
-      layer="bika.coa.interfaces.IBikaCOALayer"
-      />
+      layer="bika.qmanager.interfaces.IBikaQmanagerLayer"/>
 
 </configure>
